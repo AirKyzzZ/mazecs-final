@@ -7,7 +7,7 @@
 //               via Console.SetCursorPosition()
 // ============================================================
 
-var grid = new int[50, 20];
+var grid = new CellType[50, 20];
 
 const int width = 50;
 const int height = 20;
@@ -22,7 +22,7 @@ const int cellH = height / 2;   // 10
 
 for (var y = 0; y < height; y++)
     for (var x = 0; x < width; x++)
-        grid[x, y] = 1;
+        grid[x, y] = CellType.Wall;
 
 var stackX = new int[cellW * cellH];
 var stackY = new int[cellW * cellH];
@@ -38,7 +38,7 @@ Random rng = new Random();
 var startCX = 0;
 var startCY = 0;
 visited[startCX, startCY] = true;
-grid[startCX * 2, startCY * 2] = 0;
+grid[startCX * 2, startCY * 2] = CellType.Corridor;
 
 stackX[stackTop] = startCX;
 stackY[stackTop] = startCY;
@@ -63,8 +63,8 @@ while (stackTop > 0)
         var ny = cy + dy[order[d]];
         if (nx >= 0 && nx < cellW && ny >= 0 && ny < cellH && !visited[nx, ny])
         {
-            grid[cx * 2 + dx[order[d]], cy * 2 + dy[order[d]]] = 0;
-            grid[nx * 2, ny * 2] = 0;
+            grid[cx * 2 + dx[order[d]], cy * 2 + dy[order[d]]] = CellType.Corridor;
+            grid[nx * 2, ny * 2] = CellType.Corridor;
             visited[nx, ny] = true;
             stackX[stackTop] = nx;
             stackY[stackTop] = ny;
@@ -82,8 +82,8 @@ var playerY = 0;
 var outX = (cellW - 1) * 2;
 var outY = (cellH - 1) * 2;
 
-grid[playerX, playerY] = 2;
-grid[outX, outY] = 3;
+grid[playerX, playerY] = CellType.Player;
+grid[outX, outY] = CellType.Exit;
 
 // ── Dessin initial complet (une seule fois) ──
 Console.Clear();
@@ -102,9 +102,9 @@ for (var y = 0; y < height; y++)
     {
         Console.SetCursorPosition(offsetX + x, offsetY + y);
         var cell = grid[x, y];
-        if (cell == 1)      { Console.ForegroundColor = ConsoleColor.DarkGray;  Console.Write("█"); }
-        else if (cell == 2) { Console.ForegroundColor = ConsoleColor.Yellow;    Console.Write("@"); }
-        else if (cell == 3) { Console.ForegroundColor = ConsoleColor.Green;     Console.Write("★"); }
+        if (cell == CellType.Wall)      { Console.ForegroundColor = ConsoleColor.DarkGray;  Console.Write("█"); }
+        else if (cell == CellType.Player) { Console.ForegroundColor = ConsoleColor.Yellow;    Console.Write("@"); }
+        else if (cell == CellType.Exit) { Console.ForegroundColor = ConsoleColor.Green;     Console.Write("★"); }
         else                { Console.ForegroundColor = ConsoleColor.DarkBlue;  Console.Write("·"); }
     }
 }
@@ -118,10 +118,10 @@ Console.ResetColor();
 void DrawCell(int cx, int cy)
 {
     Console.SetCursorPosition(offsetX + cx, offsetY + cy);
-    int cell = grid[cx, cy];
-    if (cell == 1)      { Console.ForegroundColor = ConsoleColor.DarkGray;  Console.Write("█"); }
-    else if (cell == 2) { Console.ForegroundColor = ConsoleColor.Yellow;    Console.Write("@"); }
-    else if (cell == 3) { Console.ForegroundColor = ConsoleColor.Green;     Console.Write("★"); }
+    var cell = grid[cx, cy];
+    if (cell == CellType.Wall)      { Console.ForegroundColor = ConsoleColor.DarkGray;  Console.Write("█"); }
+    else if (cell == CellType.Player) { Console.ForegroundColor = ConsoleColor.Yellow;    Console.Write("@"); }
+    else if (cell == CellType.Exit) { Console.ForegroundColor = ConsoleColor.Green;     Console.Write("★"); }
     else                { Console.ForegroundColor = ConsoleColor.DarkBlue;  Console.Write("·"); }
     Console.ResetColor();
 }
@@ -142,18 +142,18 @@ while (!won)
     else if (key == ConsoleKey.D || key == ConsoleKey.RightArrow) nx2++;
     else if (key == ConsoleKey.Escape) break;
 
-    if (nx2 >= 0 && nx2 < width && ny2 >= 0 && ny2 < height && grid[nx2, ny2] != 1)
+    if (nx2 >= 0 && nx2 < width && ny2 >= 0 && ny2 < height && grid[nx2, ny2] != CellType.Wall)
     {
-        if (grid[nx2, ny2] == 3) won = true;
+        if (grid[nx2, ny2] == CellType.Exit) won = true;
 
         // ✅ Efface l'ancienne position (couloir) → 1 seule case redessinée
-        grid[playerX, playerY] = 0;
+        grid[playerX, playerY] = CellType.Corridor;
         DrawCell(playerX, playerY);
 
         // ✅ Dessine la nouvelle position → 1 seule case redessinée
         playerX = nx2;
         playerY = ny2;
-        grid[playerX, playerY] = 2;
+        grid[playerX, playerY] = CellType.Player;
         DrawCell(playerX, playerY);
     }
 }
@@ -180,3 +180,11 @@ Console.SetCursorPosition(0, offsetY + height + 8);
 Console.WriteLine("  Appuyez sur une key pour quitter...");
 Console.CursorVisible = true;
 Console.ReadKey(true);
+
+enum CellType
+{
+    Corridor = 0,
+    Wall = 1,
+    Player = 2,
+    Exit = 3
+}
