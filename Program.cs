@@ -24,7 +24,10 @@ const ConsoleColor HeaderColor   = ConsoleColor.Cyan;
 const ConsoleColor InfoColor     = ConsoleColor.DarkCyan;
 
 var kbd  = new KeyboardController();
-var maze = new Maze(new MazeGen(MazeSize, StartPos: Vec2d.Origin, .3));
+var maze = new Maze(new MazeGen(
+    MazeSize, StartPos: Vec2d.Origin, 
+    coinRate: .3, doorRate: .2
+));
 var player = new Player(maze);
 
 using (var screen = new ConsoleScreen(MazePos))

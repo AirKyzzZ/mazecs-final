@@ -2,7 +2,6 @@
 
 internal class Start : Room
 {
-    public static readonly Start Instance = new Start();
-    private Start() { }
+    public Start(IEnumerable<ICollectable> items):base(items) { }
     public override bool IsStartPos => true;
 }
