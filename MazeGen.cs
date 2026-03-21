@@ -1,8 +1,9 @@
 ﻿namespace SylLab.MazeCS;
 
 using SylLab.MazeCS.Cells;
+using SylLab.MazeCS.Collectables;
 
-public class MazeGen(Vec2d MazeSize, Vec2d StartPos) : IMazeGenerator
+public class MazeGen(Vec2d MazeSize, Vec2d StartPos, double coinRate) : IMazeGenerator
 {    
     public Cell[,] Generate()
     {
@@ -33,16 +34,18 @@ public class MazeGen(Vec2d MazeSize, Vec2d StartPos) : IMazeGenerator
 
         void SetTile(Vec2d pos, Cell type) => grid[pos.X, pos.Y] = type;
 
+        Cell NewRoom() => new Room(rng.NextDouble() < coinRate ? [ Coin.Instance ] : null);
+
         void GenerateMazeRec(Vec2d pos)
         {
-            SetTile(pos, Room.Instance);
+            SetTile(pos, NewRoom());
             foreach (var index in rng.GetItems(orders, 1).First())
             {
                 var next = pos + dirs[index];
 
                 if (next.IsIn(MazeSize) && !grid[next.X, next.Y].IsTraversable)
                 {
-                    SetTile((pos + next) / 2, Room.Instance);
+                    SetTile((pos + next) / 2, NewRoom());
                     GenerateMazeRec(next);
                 }
             }

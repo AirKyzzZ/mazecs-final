@@ -8,4 +8,10 @@ public abstract class Cell
     public virtual bool IsTraversable => false;
     public virtual bool IsStartPos => false;
     public virtual bool IsEndPos => false;
+
+    public virtual IEnumerable<ICollectable> Collect(out int score)
+    {
+        score = 0;
+        return [];
+    }
 }

@@ -2,7 +2,7 @@
 
 internal class Start : Room
 {
-    public static new readonly Start Instance = new Start();
+    public static readonly Start Instance = new Start();
     private Start() { }
     public override bool IsStartPos => true;
 }
