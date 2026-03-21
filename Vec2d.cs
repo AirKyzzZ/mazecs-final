@@ -2,6 +2,8 @@
 
 public record Vec2d(int X, int Y)
 {
+    public static readonly Vec2d Origin= new( 0,  0);
+
     public static readonly Vec2d North = new( 0, -1);
     public static readonly Vec2d East  = new( 1,  0);
     public static readonly Vec2d South = new( 0,  1);

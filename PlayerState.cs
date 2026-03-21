@@ -1,6 +1,6 @@
 ﻿namespace SylLab.MazeCS;
 
-enum State
+public enum State
 {
     Playing,
     Won,

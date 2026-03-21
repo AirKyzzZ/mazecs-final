@@ -1,6 +1,5 @@
 using SylLab.MazeCS;
 
-Vec2d Origin = new(0, 0);
 Vec2d Offset = new(0, 3);
 Vec2d MazeSize = new(50, 20);
 
@@ -10,18 +9,13 @@ var PressKeyPos = WinEscPos + new Vec2d(0, 5);
 
 var grid = new CellType[MazeSize.X, MazeSize.Y];
 
-const string HeaderMsg = """
-    ╔══════════════════════════════════════════════════╗
-    ║          🏃 LABYRINTHE ASCII  C#  🏃             ║
-    ╚══════════════════════════════════════════════════╝
-    """;
-const string InfoMsg = "  [Z/↑] Haut   [S/↓] Bas   [Q/←] Gauche   [D/→] Droite   [Échap] Quitter";
-const string WinMsg = """
-    ╔════════════════════════════════╗
-    ║   🎉  FÉLICITATIONS !  🎉      ║
-    ║   Vous avez trouvé la sortie ! ║
-    ╚════════════════════════════════╝
-""";
+const int HeaderPaddingX = 10;
+const int WinPaddingX = 2;
+
+const string HeaderMsg = "🏃 LABYRINTHE ASCII  C#  🏃";
+const string InfoMsg   = "  [Z/↑] Haut   [S/↓] Bas   [Q/←] Gauche   [D/→] Droite   [Échap] Quitter";
+const string WinMsg1   = "🎉  FÉLICITATIONS !  🎉";
+const string WinMsg2   = "Vous avez trouvé la sortie !";
 const string EscMsg = "\n  Partie abandonnée. À bientôt !";
 const string PressKeyMsg = "  Appuyez sur une key pour quitter...";
 
@@ -29,95 +23,56 @@ const ConsoleColor WinColor      = ConsoleColor.Green;
 const ConsoleColor EscColor      = ConsoleColor.Red;
 const ConsoleColor HeaderColor   = ConsoleColor.Cyan;
 const ConsoleColor InfoColor     = ConsoleColor.DarkCyan;
-const ConsoleColor WallColor     = ConsoleColor.DarkGray;
-const ConsoleColor CorridorColor = ConsoleColor.DarkBlue;
-const ConsoleColor PlayerColor   = ConsoleColor.Yellow;
-const ConsoleColor ExitColor     = ConsoleColor.Green;
 
-var player = Origin;
+var player = Vec2d.Origin;
 var mode = State.Playing;
-
-GenerateMaze(grid, player);
-DrawScreen();
-
-while (mode == State.Playing)
+var kbd = new KeyboardController();
+using (var screen = new ConsoleScreen(Offset))
 {
-    var key = Console.ReadKey(true).Key;
-    var newPlayer = player;
+    GenerateMaze(grid, player);
 
-    switch (key)
-    {
-        case ConsoleKey.Z or ConsoleKey.UpArrow   : newPlayer += Vec2d.North; break;
-        case ConsoleKey.S or ConsoleKey.DownArrow : newPlayer += Vec2d.South; break;
-        case ConsoleKey.Q or ConsoleKey.LeftArrow : newPlayer += Vec2d.West ; break;
-        case ConsoleKey.D or ConsoleKey.RightArrow: newPlayer += Vec2d.East ; break;
-        case ConsoleKey.Escape: mode = State.Canceled; break;
-    }
-    if (newPlayer.IsIn(MazeSize) && grid[newPlayer.X, newPlayer.Y] != CellType.Wall)
-    {
-        if (grid[newPlayer.X, newPlayer.Y] == CellType.Exit) mode = State.Won;
+    screen.DrawFrame(Vec2d.Origin, HeaderPaddingX, HeaderColor, HeaderMsg);
+    screen.DrawMaze (grid);
+    screen.DrawTextXY(InfoPos, InfoMsg, InfoColor);
 
-        UpdateCell(player, CellType.Corridor);
-        UpdateCell(player = newPlayer, CellType.Player);
+    while (mode == State.Playing)
+    {
+        var newPlayer = player;
+
+        kbd.WaitKey();
+        newPlayer += kbd.DirectionPressed;
+        if (kbd.IsEscapePressed)
+            mode = State.Canceled;
+        if (newPlayer.IsIn(MazeSize) && grid[newPlayer.X, newPlayer.Y] != CellType.Wall)
+        {
+            if (grid[newPlayer.X, newPlayer.Y] == CellType.Exit) mode = State.Won;
+
+            UpdateCell(screen, player, CellType.Corridor);
+            UpdateCell(screen, player = newPlayer, CellType.Player);
+        }
     }
+    if(mode == State.Won)
+        screen.DrawFrame(WinEscPos, WinPaddingX, WinColor, WinMsg1, WinMsg2);
+    else
+        screen.DrawTextXY(WinEscPos, EscMsg, EscColor);
+    screen.DrawTextXY(PressKeyPos, PressKeyMsg);
 }
-DrawTextColorXY(WinEscPos, mode == State.Won ? (WinMsg, WinColor) : (EscMsg, EscColor));
-DrawTextXY(PressKeyPos, PressKeyMsg);
-Console.CursorVisible = true;
-Console.ReadKey(true);
+kbd.WaitKey();
 
 #region Functions
 
-void DrawTextXY(Vec2d pos, string text, ConsoleColor? color = null)
-{
-    Console.SetCursorPosition(pos.X, pos.Y);
-    if (color.HasValue)
-    {
-        Console.ForegroundColor = color.Value;
-    }
-    Console.Write(text);
-    Console.ResetColor();
-}
-
-void DrawTextColorXY(Vec2d pos, (string text, ConsoleColor color) info) =>
-    DrawTextXY(pos, info.text, info.color);
-
-void DrawCell(Vec2d mazePos) => DrawTextColorXY(
-    Offset + mazePos,
-    grid[mazePos.X, mazePos.Y] switch
-    {
-        CellType.Wall   => ("█", WallColor),
-        CellType.Player => ("@", PlayerColor),
-        CellType.Exit   => ("★", ExitColor),
-        _               => ("·", CorridorColor)
-    });
-
-void UpdateCell(Vec2d mazePos, CellType type)
+void UpdateCell(ConsoleScreen screen, Vec2d mazePos, CellType type)
 {
     SetTile(mazePos, type);
-    DrawCell(mazePos);
-}
-
-void DrawScreen()
-{
-    Console.Clear();
-    Console.CursorVisible = false;
-
-    DrawTextXY(Origin, HeaderMsg, HeaderColor);
-    for (var pos = Origin; pos.IsIn(MazeSize); pos = pos.NextLTR(MazeSize.X))
-    {
-        DrawCell(pos);
-    }
-    DrawTextXY(InfoPos, InfoMsg, InfoColor);
+    screen.DrawCell(mazePos, type);
 }
 
 void SetTile(Vec2d pos, CellType type) =>
     grid[pos.X, pos.Y] = type;
 
-
 void GenerateMaze(CellType[,] grid, Vec2d start)
 {
-    for (var pos = Origin; pos.IsIn(MazeSize); pos = pos.NextLTR(MazeSize.X))
+    for (var pos = Vec2d.Origin; pos.IsIn(MazeSize); pos = pos.NextLTR(MazeSize.X))
     {
         SetTile(pos, CellType.Wall);
     }
@@ -153,5 +108,4 @@ void GenerateMaze(CellType[,] grid, Vec2d start)
         }
     }
 }
-
 #endregion
