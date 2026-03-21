@@ -1,6 +1,6 @@
 ﻿namespace SylLab.MazeCS;
 
-public class ConsoleScreen : IDisposable
+public class ConsoleScreen : IDisposable, IGridDisplay
 {
     public ConsoleScreen(Vec2d gridPos)
     {

@@ -14,8 +14,8 @@ public class Player(Maze maze)
 
     private Vec2d NextWalkablePos(Vec2d nextPos) =>
         nextPos.IsIn(maze.MazeSize) && maze[nextPos] != CellType.Wall ? nextPos : _pos;
-    public void Draw(ConsoleScreen screen) => 
-        screen.DrawGridCell(_pos, ("@", ConsoleColor.Yellow));
+    public void Draw(IGridDisplay gridDisp) =>
+        gridDisp.DrawGridCell(_pos, ("@", ConsoleColor.Yellow));
     public Maze Maze => maze;
     public bool IsPlaying { get; private set; } = true;
     public bool HasWon    { get; private set; } = false;

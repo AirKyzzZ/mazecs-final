@@ -21,7 +21,7 @@ public class Maze
         }
     }
 
-    public void RedrawCell(ConsoleScreen screen, Vec2d mazePos) => screen.DrawGridCell(
+    public void RedrawCell(IGridDisplay gridDisp, Vec2d mazePos) => gridDisp.DrawGridCell(
         mazePos,
         this[mazePos] switch {
             CellType.Wall     => ("█", ConsoleColor.DarkGray),
@@ -32,10 +32,10 @@ public class Maze
         }
     );
 
-    public void Draw(ConsoleScreen screen)
+    public void Draw(IGridDisplay gridDisp)
     {
         foreach (var pos in CellPositions)
-            RedrawCell(screen, pos);
+            RedrawCell(gridDisp, pos);
     }
 
     private readonly CellType[,] _grid;
