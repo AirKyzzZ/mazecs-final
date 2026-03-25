@@ -1,46 +1,17 @@
 @using MazeCS
+@implements IGridDisplay
 
 <div class="maze" tabindex="0">
     <div class="maze-content">
-        <div class="maze-row">
-            <div class="maze-cell room"></div>
-            <div class="maze-cell wall"></div>
-            <div class="maze-cell room"></div>
-            <div class="maze-cell items"></div>
-            <div class="maze-cell room"></div>
-            <div class="maze-cell room"></div>
-            <div class="maze-cell room"></div>
-            <div class="maze-cell wall"></div>
-            <div class="maze-cell items"></div>
-            <div class="maze-cell room"></div>
-            <div class="maze-cell room"></div>
-        </div>
-        <div class="maze-row">
-            <div class="maze-cell room"></div>
-            <div class="maze-cell wall"></div>
-            <div class="maze-cell wall"></div>
-            <div class="maze-cell wall"></div>
-            <div class="maze-cell room"></div>
-            <div class="maze-cell wall"></div>
-            <div class="maze-cell player open"></div>
-            <div class="maze-cell wall"></div>
-            <div class="maze-cell room"></div>
-            <div class="maze-cell wall"></div>
-            <div class="maze-cell room"></div>
-        </div>
-        <div class="maze-row">
-            <div class="maze-cell room"></div>
-            <div class="maze-cell room"></div>
-            <div class="maze-cell room"></div>
-            <div class="maze-cell open"></div>
-            <div class="maze-cell room"></div>
-            <div class="maze-cell wall"></div>
-            <div class="maze-cell items"></div>
-            <div class="maze-cell wall"></div>
-            <div class="maze-cell room"></div>
-            <div class="maze-cell wall"></div>
-            <div class="maze-cell exit"></div>
-        </div>
+        @for (int y = 0; y < grid.Count; y++)
+        {
+            <div class="maze-row">
+                @for (int x = 0; x < grid[y].Count; x++)
+                {
+                    <div class="maze-cell @GetCellClasses(x, y)"></div>
+                }
+            </div>
+        }
         <div class="maze-bottom"></div>
     </div>
 </div>
@@ -51,4 +22,50 @@
 
     [Parameter]
     public required Player Player { get; set; }
+
+    private List<List<string>> grid = new();
+    private Vec2d? playerPos = null;
+
+    protected override void OnParametersSet()
+    {
+        grid = new();
+        playerPos = null;
+        Maze.Draw(this);
+        Player.Draw(this);
+    }
+
+    void IGridDisplay.DrawGridCell(Vec2d pos, string content, ConsoleColor _)
+    {
+        if (content == Player.PlayerSymbol)
+        {
+            playerPos = pos;
+            return;
+        }
+
+        while (grid.Count <= pos.Y)
+            grid.Add(new List<string>());
+
+        while (grid[pos.Y].Count <= pos.X)
+            grid[pos.Y].Add("");
+
+        grid[pos.Y][pos.X] = GetCssClass(content);
+    }
+
+    private string GetCssClass(string content) => content switch
+    {
+        Cell.WallSymbol => "wall",
+        Cell.RoomWithItemsSymbol => "items",
+        Cell.ClosedDoorSymbol => "door",
+        Cell.OpenedDoorSymbol => "open",
+        Cell.ExitSymbol => "exit",
+        _ => "room"
+    };
+
+    private string GetCellClasses(int x, int y)
+    {
+        var css = grid[y][x];
+        if (playerPos != null && playerPos.X == x && playerPos.Y == y)
+            css = "player " + css;
+        return css;
+    }
 }
