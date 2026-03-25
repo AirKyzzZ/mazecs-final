@@ -1,0 +1,54 @@
+@using MazeCS
+
+<div class="maze" tabindex="0">
+    <div class="maze-content">
+        <div class="maze-row">
+            <div class="maze-cell room"></div>
+            <div class="maze-cell wall"></div>
+            <div class="maze-cell room"></div>
+            <div class="maze-cell items"></div>
+            <div class="maze-cell room"></div>
+            <div class="maze-cell room"></div>
+            <div class="maze-cell room"></div>
+            <div class="maze-cell wall"></div>
+            <div class="maze-cell items"></div>
+            <div class="maze-cell room"></div>
+            <div class="maze-cell room"></div>
+        </div>
+        <div class="maze-row">
+            <div class="maze-cell room"></div>
+            <div class="maze-cell wall"></div>
+            <div class="maze-cell wall"></div>
+            <div class="maze-cell wall"></div>
+            <div class="maze-cell room"></div>
+            <div class="maze-cell wall"></div>
+            <div class="maze-cell player open"></div>
+            <div class="maze-cell wall"></div>
+            <div class="maze-cell room"></div>
+            <div class="maze-cell wall"></div>
+            <div class="maze-cell room"></div>
+        </div>
+        <div class="maze-row">
+            <div class="maze-cell room"></div>
+            <div class="maze-cell room"></div>
+            <div class="maze-cell room"></div>
+            <div class="maze-cell open"></div>
+            <div class="maze-cell room"></div>
+            <div class="maze-cell wall"></div>
+            <div class="maze-cell items"></div>
+            <div class="maze-cell wall"></div>
+            <div class="maze-cell room"></div>
+            <div class="maze-cell wall"></div>
+            <div class="maze-cell exit"></div>
+        </div>
+        <div class="maze-bottom"></div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public required Maze Maze { get; set; }
+
+    [Parameter]
+    public required Player Player { get; set; }
+}
