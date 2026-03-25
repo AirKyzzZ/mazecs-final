@@ -1,0 +1,27 @@
+@page "/"
+@using MazeCS
+
+<PageTitle>MazeCS</PageTitle>
+
+<h1>🏃 LABYRINTHE C# 🏃</h1>
+
+<p>Score : @Player.Score / Inventaire : @Player.InventorySize items</p>
+
+@code {
+    public required Maze Maze;
+    public required Player Player;
+
+    protected override void OnInitialized()
+    {
+        Maze = new Maze(new MazeGen(
+            new Vec2d(21, 11),
+            StartPos: Vec2d.Origin,
+            coinRate: 0.3,
+            doorRate: 0.2
+        ));
+        Player = new Player(Maze);
+
+        Player.InventoryChanged += (_, _) => StateHasChanged();
+        Player.ScoreChanged += (_, _) => StateHasChanged();
+    }
+}
