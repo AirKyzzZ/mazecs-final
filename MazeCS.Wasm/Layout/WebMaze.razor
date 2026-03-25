@@ -1,7 +1,9 @@
 @using MazeCS
+@using Microsoft.AspNetCore.Components.Web
 @implements IGridDisplay
+@implements IController
 
-<div class="maze" tabindex="0">
+<div class="maze" tabindex="0" @onkeydown="OnKeyDown">
     <div class="maze-content">
         @for (int y = 0; y < grid.Count; y++)
         {
@@ -25,13 +27,29 @@
 
     private List<List<string>> grid = new();
     private Vec2d? playerPos = null;
+    private string _lastKey = "";
 
     protected override void OnParametersSet()
+    {
+        Redraw();
+    }
+
+    private void Redraw()
     {
         grid = new();
         playerPos = null;
         Maze.Draw(this);
         Player.Draw(this);
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (!Player.IsPlaying) return;
+
+        _lastKey = e.Key;
+        Player.Move(this, out _);
+        Redraw();
+        _lastKey = "";
     }
 
     void IGridDisplay.DrawGridCell(Vec2d pos, string content, ConsoleColor _)
@@ -68,4 +86,16 @@
             css = "player " + css;
         return css;
     }
+
+    Vec2d IController.DirectionPressed => _lastKey switch
+    {
+        "q" or "Q" or "ArrowLeft"  => Vec2d.West,
+        "d" or "D" or "ArrowRight" => Vec2d.East,
+        "z" or "Z" or "ArrowUp"    => Vec2d.North,
+        "s" or "S" or "ArrowDown"  => Vec2d.South,
+        _ => new Vec2d(0, 0)
+    };
+
+    bool IController.IsCollectPressed => _lastKey == " ";
+    bool IController.IsEscapePressed => _lastKey == "Escape";
 }
